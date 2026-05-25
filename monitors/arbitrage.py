@@ -63,17 +63,26 @@ class ArbitrageMonitor:
                 {"id": m.id, "question": m.question, "yes_price": m.yes_price,
                  "no_price": m.no_price, "volume_24h": m.volume_24h}
                 for m in db.query(Market)
-                .filter(Market.is_active == True, Market.yes_price != None,
-                        Market.yes_price > 0)
+                .filter(
+                    Market.is_active == True,
+                    Market.yes_price != None,
+                    Market.yes_price > 0.05,   # exclude near-resolved (YES→0 or YES→1)
+                    Market.yes_price < 0.95,
+                    Market.volume_24h > 500,   # require meaningful liquidity
+                )
                 .order_by(Market.volume_24h.desc())
-                .limit(2000)   # top 2000 by volume for efficiency
+                .limit(2000)
                 .all()
             ]
             kalshi_markets = [
                 {"ticker": k.ticker, "title": k.title, "yes_price": k.yes_price,
                  "no_price": k.no_price, "volume": k.volume}
                 for k in db.query(KalshiMarket)
-                .filter(KalshiMarket.yes_price != None, KalshiMarket.yes_price > 0)
+                .filter(
+                    KalshiMarket.yes_price != None,
+                    KalshiMarket.yes_price > 0.05,  # exclude near-resolved Kalshi markets
+                    KalshiMarket.yes_price < 0.95,
+                )
                 .all()
             ]
 
@@ -150,6 +159,10 @@ class ArbitrageMonitor:
         kalshi_no = km.get("no_price") or (1.0 - kalshi_yes if kalshi_yes else None)
 
         if None in (poly_yes, poly_no, kalshi_yes, kalshi_no):
+            return None
+
+        # Reject near-resolved prices — they produce huge fake arb numbers
+        if not (0.05 < poly_yes < 0.95) or not (0.05 < kalshi_yes < 0.95):
             return None
 
         results = []
