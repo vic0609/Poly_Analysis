@@ -154,13 +154,17 @@ class Executor:
                 logger.info("SKIP near-expiry %s (closes in %.1fh)", market_id[:16], (ed - now).total_seconds() / 3600)
                 return
 
-        # Skip markets outside 0.30–0.70 YES price range.
-        # 0.25–0.29 trades were net -$70 at -6.7% ROI all-time — low-probability
-        # markets have wide spreads and resolve wrong too often to overcome Kelly sizing.
-        # 0.70–0.75 trades were net -$50 at -2.9% ROI: at 0.745 entry Kelly sizes
-        # to ~$96 but upside is only 25c/share — sports binary outcomes erase gains.
-        if curr_price < 0.30 or curr_price > 0.70:
-            logger.info("SKIP extreme %s price=%.4f", market_id[:16], curr_price)
+        # Skip markets outside the 0.35–0.65 fair-payoff zone.
+        # Applied symmetrically: for YES bets check YES price; for NO bets check NO price.
+        # At YES>0.65 the break-even win rate exceeds what our signals achieve (~65% needed,
+        # ~49% observed), and at YES<0.35 the same problem applies to NO bets (NO>0.65).
+        # Tighter than the old 0.30–0.70 range based on observed ROI by price bucket.
+        entry_price_of_side = curr_price if direction == "YES" else (1.0 - curr_price)
+        if entry_price_of_side < 0.35 or entry_price_of_side > 0.65:
+            logger.info(
+                "SKIP bad-payoff %s dir=%s side_price=%.4f",
+                market_id[:16], direction, entry_price_of_side,
+            )
             return
 
         # ── Kelly sizing ──────────────────────────────────────

@@ -21,11 +21,13 @@ from db.models import (
 logger = logging.getLogger(__name__)
 
 # Weights for composite edge score (must sum to 1.0)
-WEIGHT_PRICE_SENTIMENT = 0.20
+# base_rate weight cut 0.25→0.10: it inflated scores for high-priced markets without
+# driving direction, causing the 60-64 bucket to trade at 37% WR (-$389 all-time).
+WEIGHT_PRICE_SENTIMENT = 0.25
 WEIGHT_WHALE            = 0.15
-WEIGHT_VOLUME_ANOMALY   = 0.35
-WEIGHT_ARB              = 0.05
-WEIGHT_BASE_RATE        = 0.25
+WEIGHT_VOLUME_ANOMALY   = 0.40
+WEIGHT_ARB              = 0.10
+WEIGHT_BASE_RATE        = 0.10
 
 # SQLite max variables per query — stay under the 999 default limit
 _CHUNK = 500
