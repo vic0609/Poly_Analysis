@@ -22,7 +22,7 @@ if not PRIVATE_KEY:
     print()
     print("ERROR: POLYMARKET_PRIVATE_KEY is not set in .env")
     print()
-    print("1. Open MetaMask → three dots → Account Details → Show Private Key")
+    print("1. Open MetaMask > three dots > Account Details > Show Private Key")
     print("2. Copy the 64-character hex string")
     print("3. Open .env and set:  POLYMARKET_PRIVATE_KEY=<your key>")
     print("4. Re-run this script")
@@ -55,7 +55,7 @@ try:
     creds = client.create_or_derive_api_creds()
 
     print("\n" + "=" * 55)
-    print("  SUCCESS — paste these into your .env file:")
+    print("  SUCCESS - paste these into your .env file:")
     print("=" * 55)
     print(f"POLYMARKET_API_KEY={creds.api_key}")
     print(f"POLYMARKET_API_SECRET={creds.api_secret}")
