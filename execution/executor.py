@@ -65,9 +65,8 @@ class Executor:
             self._clob_client = ClobClient(
                 host=POLYMARKET_CLOB_API,
                 chain_id=POLYGON,
-                private_key=POLYMARKET_PRIVATE_KEY,
+                key=POLYMARKET_PRIVATE_KEY,
                 signature_type=1,   # L1 wallet signing
-                api_key=POLYMARKET_API_KEY or None,
             )
             logger.info("CLOB client initialized for live trading")
         except ImportError:

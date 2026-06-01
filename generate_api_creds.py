@@ -49,7 +49,7 @@ try:
     client = ClobClient(
         host="https://clob.polymarket.com",
         chain_id=POLYGON,
-        private_key=PRIVATE_KEY,
+        key=PRIVATE_KEY,
         signature_type=0,   # EOA wallet
     )
     creds = client.create_or_derive_api_creds()
