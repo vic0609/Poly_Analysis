@@ -23,6 +23,7 @@ from config import (
     MAX_POSITION_USDC,
     MIN_POSITION_USDC,
     MIN_EDGE_SCORE_TO_TRADE,
+    MAX_EDGE_SCORE_TO_TRADE,
     MIN_CONFIDENCE_TO_TRADE,
     MIN_PRICE_GAP_TO_TRADE,
     MAX_OPEN_POSITIONS,
@@ -95,6 +96,9 @@ class Executor:
             return
         if edge_score < MIN_EDGE_SCORE_TO_TRADE:
             return
+        if edge_score > MAX_EDGE_SCORE_TO_TRADE:
+            logger.debug("SKIP over-score %s score=%.1f (max=%.0f)", market_id[:16], edge_score, MAX_EDGE_SCORE_TO_TRADE)
+            return
 
         signal_type = signal.get("signal_type", "")
         if signal_type in DISABLED_SIGNAL_TYPES:
@@ -164,6 +168,12 @@ class Executor:
                 "SKIP bad-payoff %s dir=%s side_price=%.4f",
                 market_id[:16], direction, entry_price_of_side,
             )
+            return
+
+        # Skip YES price 0.50-0.59 range — 36.6% WR and -7.8% ROI historically.
+        # The 0.60-0.69 range (50% WR, +2.4% ROI) is where YES-side edge lives.
+        if direction == "YES" and 0.50 <= curr_price < 0.60:
+            logger.info("SKIP poor-yes-range %s price=%.4f", market_id[:16], curr_price)
             return
 
         # ── Kelly sizing ──────────────────────────────────────
