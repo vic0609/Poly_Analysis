@@ -29,6 +29,8 @@ from config import (
     MAX_OPEN_POSITIONS,
     MAX_DAILY_LOSS_PCT,
     POLYMARKET_API_KEY,
+    POLYMARKET_API_SECRET,
+    POLYMARKET_API_PASSPHRASE,
     POLYMARKET_CLOB_API,
     DISABLED_SIGNAL_TYPES,
 )
@@ -61,12 +63,19 @@ class Executor:
         """Initialize Polymarket CLOB client for live trading."""
         try:
             from py_clob_client.client import ClobClient
+            from py_clob_client.clob_types import ApiCreds
             from py_clob_client.constants import POLYGON
             from config import POLYMARKET_PRIVATE_KEY
+            creds = ApiCreds(
+                api_key=POLYMARKET_API_KEY,
+                api_secret=POLYMARKET_API_SECRET,
+                api_passphrase=POLYMARKET_API_PASSPHRASE,
+            ) if POLYMARKET_API_KEY else None
             self._clob_client = ClobClient(
                 host=POLYMARKET_CLOB_API,
                 chain_id=POLYGON,
                 key=POLYMARKET_PRIVATE_KEY,
+                creds=creds,
                 signature_type=1,   # L1 wallet signing
             )
             logger.info("CLOB client initialized for live trading")
